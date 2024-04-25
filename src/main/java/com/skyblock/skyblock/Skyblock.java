@@ -16,7 +16,6 @@ import com.skyblock.skyblock.commands.player.*;
 import com.skyblock.skyblock.commands.potion.CreatePotionCommand;
 import com.skyblock.skyblock.commands.potion.EffectCommand;
 import com.skyblock.skyblock.commands.potion.EffectsCommand;
-import com.skyblock.skyblock.database.DatabaseManager;
 import com.skyblock.skyblock.features.auction.AuctionBid;
 import com.skyblock.skyblock.features.auction.AuctionHouse;
 import com.skyblock.skyblock.features.auction.AuctionSettings;
@@ -25,8 +24,6 @@ import com.skyblock.skyblock.features.bags.BagManager;
 import com.skyblock.skyblock.features.bazaar.Bazaar;
 import com.skyblock.skyblock.features.bazaar.impl.SkyblockBazaar;
 import com.skyblock.skyblock.features.blocks.RegenerativeBlockHandler;
-import com.skyblock.skyblock.features.blocks.SpongeBlock;
-import com.skyblock.skyblock.features.blocks.SpongeReplacer;
 import com.skyblock.skyblock.features.blocks.SpongeReplacerHandler;
 import com.skyblock.skyblock.features.blocks.crops.FloatingCrystalHandler;
 import com.skyblock.skyblock.features.collections.Collection;
@@ -42,7 +39,6 @@ import com.skyblock.skyblock.features.enchantment.enchantments.sword.*;
 import com.skyblock.skyblock.features.enchantment.enchantments.tool.EfficiencyEnchantment;
 import com.skyblock.skyblock.features.entities.EntityListener;
 import com.skyblock.skyblock.features.entities.SkyblockEntityHandler;
-import com.skyblock.skyblock.features.entities.dragon.DragonAltar;
 import com.skyblock.skyblock.features.entities.dragon.DragonSequence;
 import com.skyblock.skyblock.features.entities.spawners.EntitySpawnerHandler;
 import com.skyblock.skyblock.features.fairysouls.FairySoulHandler;
@@ -58,7 +54,6 @@ import com.skyblock.skyblock.features.launchpads.LaunchPadHandler;
 import com.skyblock.skyblock.features.location.SkyblockLocationManager;
 import com.skyblock.skyblock.features.merchants.Merchant;
 import com.skyblock.skyblock.features.merchants.MerchantHandler;
-import com.skyblock.skyblock.features.minions.MinionBase;
 import com.skyblock.skyblock.features.minions.MinionHandler;
 import com.skyblock.skyblock.features.minions.MinionListener;
 import com.skyblock.skyblock.features.minions.items.MinionItemHandler;
@@ -79,7 +74,6 @@ import com.skyblock.skyblock.features.slayer.SlayerHandler;
 import com.skyblock.skyblock.features.time.SkyblockTimeManager;
 import com.skyblock.skyblock.features.trades.TradeHandler;
 import com.skyblock.skyblock.listeners.*;
-import com.skyblock.skyblock.updater.DependencyUpdater;
 import com.skyblock.skyblock.utilities.Util;
 import com.skyblock.skyblock.utilities.command.CommandHandler;
 import com.skyblock.skyblock.utilities.data.ServerData;
@@ -90,10 +84,7 @@ import com.skyblock.skyblock.utilities.sign.SignManager;
 import de.tr7zw.nbtapi.NBTEntity;
 import lombok.Getter;
 import net.swofty.swm.api.SlimePlugin;
-import net.swofty.swm.api.loaders.SlimeLoader;
 import org.bukkit.*;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
@@ -104,7 +95,6 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.reflections.Reflections;
 
 import java.io.File;
 import java.util.*;
@@ -174,7 +164,6 @@ public final class Skyblock extends JavaPlugin {
         this.removeables = new ArrayList<>();
 
         this.initializeServerData();
-        //DatabaseManager.connectToDatabase("mongodb://admin:admin@88.99.150.153:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.6.2", "Godspunky");
         this.registerTimeHandlers();
         this.registerReforges();
         this.registerEnchantments();
@@ -189,7 +178,6 @@ public final class Skyblock extends JavaPlugin {
         this.initializeAuctionHouse();
         this.initializeSignGui();
         this.initializeBazaar();
-        //this.initializeSpongeReplacers();
         this.initializeFloatingCrystals();
 
         this.registerMerchants();
@@ -229,30 +217,6 @@ public final class Skyblock extends JavaPlugin {
 
         int i = 0;
 
-//        File cacheFile = new File(this.getDataFolder(), ".cache.yml");
-//        FileConfiguration cache = YamlConfiguration.loadConfiguration(cacheFile);
-//
-//        List<String> removeablesList = new ArrayList<>();
-//
-//        for (Entity entity : removeables) {
-//            UUID uuid = entity.getUniqueId();
-//
-//            removeablesList.add(uuid.toString());
-//
-//            i++;
-//        }
-//
-//        cache.set("removeables", removeablesList);
-//        try {
-//            cache.save(cacheFile);
-//        } catch (Exception ex) {
-//            ex.printStackTrace();
-//        }
-//
-//        sendMessage(String.format("Removed %s Entities", i));
-//
-//        this.spongeReplacerHandler.endGeneration();
-
         Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "npc remove all");
 
         this.auctionHouse.saveToDisk();
@@ -271,11 +235,6 @@ public final class Skyblock extends JavaPlugin {
         for (SkyblockPlayer skyblockPlayer : SkyblockPlayer.playerRegistry.values()) {
             skyblockPlayer.onQuit();
         }
-
-//        try {
-//            DragonAltar.getMainAltar().onDisable();
-//            DragonSequence.endingSequence();
-//        } catch (Exception ignored) { }
 
         sendMessage("Successfully disabled Skyblock [" + Util.getTimeDifferenceAndColor(start, System.currentTimeMillis()) + ChatColor.WHITE + "]");
     }
@@ -640,23 +599,6 @@ public final class Skyblock extends JavaPlugin {
                         "hGGbYl4OuItrGiGXYYh6mCy1a5xknDipoYay1DFARt03+YJ6ebFagIMH7JgEY3CFed8WIxFcNivfpZ3q47e2KhNugR+6/X4KBrHtyz9fWVte2HGW7p2ShiYipcUL+8wBjvJ2ssEsWTUeGgqnBgo/sA3UdsWhB6E9iP34x4nm5lPfnKT2Jl9QyhsqXSOQYmidDUY5z0kGhmy0IXRoh92vF/lrzmdpS4TamfogRLGV1BivxZ8C71ImVczEm/JHWTGCdjwFBTdoZzkUOJ9IE+tbBUlOWWFMvjW+TY4Y3pBM5lzY3TMTpvG+rHZ0042E2SNfp2RmHaEAqMNb9JI57qfXKZ8zJB1/8gU+pFjuuXRsWuV0tWKLIUGSH3nIho/BidPBoe6YUsWCe9ySSrFprocKU96Ct6z5l8bsoJ5xtiOGSn/5JdUexc4IUF9ICFh7Xeu8rvGufH7s1BIyLgUBQQSvVpj31VharFkV0IVnwG/4c/YBYaaUUH07CW0woj577fd5nCVEs8pfJ7KNrChtna0LzDZQuELzDwmQO5mdOxWEwGurPvPx1uFm3tCDVBRUrj+CCVCQqIflg9s3nVTRSPZhl3ZlNW+L8/wVdjuXtGTXGWT9ou+nfGRT8c0ENrsVE3dkWe4o2BaokIIdCJ1isO+GS6oMNP6I07EGgxUZFe2kk8A="
                 ));
 
-        /*
-        Admin houses
-         */
-
-        this.npcHandler.registerNPC("sylent_",
-                new NPC(
-                        ChatColor.RED + "Sylent_",
-                        true,
-                        true,
-                        false,
-                        null,
-                        new Location(Skyblock.getSkyblockWorld(), -67.5, 69, -93.5),
-                        (p) -> Util.sendDelayedMessages(p, ChatColor.RED + "Sylent_", "You can hold as many talismans as you want in your inventory. They will always work."),
-                        "ewogICJ0aW1lc3RhbXAiIDogMTY3MzAzNTIyNDg4MSwKICAicHJvZmlsZUlkIiA6ICI1MWU4OTE1ZGJlM2E0ZDU4OTQ2OTNhMTZmM2M2MGM3MyIsCiAgInByb2ZpbGVOYW1lIiA6ICJTeWxlbnRfIiwKICAic2lnbmF0dXJlUmVxdWlyZWQiIDogdHJ1ZSwKICAidGV4dHVyZXMiIDogewogICAgIlNLSU4iIDogewogICAgICAidXJsIiA6ICJodHRwOi8vdGV4dHVyZXMubWluZWNyYWZ0Lm5ldC90ZXh0dXJlLzIzNGU2ZmVjZTVhNTY0MzNiYWFlYmE3ODc4NjYyYjIzNjJiNGZmYjdkNTIzOWVhZDgzZmZjOTUyMjFmOGViYzUiCiAgICB9LAogICAgIkNBUEUiIDogewogICAgICAidXJsIiA6ICJodHRwOi8vdGV4dHVyZXMubWluZWNyYWZ0Lm5ldC90ZXh0dXJlLzIzNDBjMGUwM2RkMjRhMTFiMTVhOGIzM2MyYTdlOWUzMmFiYjIwNTFiMjQ4MWQwYmE3ZGVmZDYzNWNhN2E5MzMiCiAgICB9CiAgfQp9",
-                        "NniVgyJmfWI5OK/7t9q4hWalHgVMO/VR5HqTod6DY+00qkCZgPkEGBxWbAdxvfE4yrVK/TaPRsMS7cJcSP3k74WYEPIPnXthNfNbzsGPz17Ns3fsc/w4GaLp688zo0OG8TRKRJA2ECcoD1B0kaAuRLKsO7NyBBj8XLL+pHv5QwNeMXg53x2OxsoTf25/BdcJJ9bNVv84V+bCAs1gspnbYBWaODcKj3qUUkUPXrm7nHeafi7snXCIRN1L088Qv3Lu7HTor3sojn9rH1FaFCLGIuVimvW+HWGRdkq3soXJrvFPyIZzstKQtXGUjOSG6V1cNPYXCVO/A6VtW1VmU2Lio9/Q7xvjLF9U3fcD4rXHZz6YUy5iZz6YbznjMAdRzYiFgg7lpRd8Au4Gcykf6873IX0YXucwcB4GiPUkRVnoCLI8j2UbdbHy8MO0ydvP1u1QamhWbRjorSJfUBbk6o2NYeYIfuZ+Gcki3xgWtrc1R0Q6FXN+K5Cir2GvXlQXjKrz2W0tAb8kkl3/4ITRZwoJN22i0CqoVq/FawFJNsW7lG/W7t29uxsaySj34gyDYsQag19DWAwUaazq207JNGVMcJCji/55qT4OxItFrjg2EvfpdJ+DbWLY2BlOABXhGKEjuYCFsABZcO9tI7gwW/+rkLIlGOqHfprtKGC/sHG63PE="
-                ));
-
         final int[] liftOperators = {0};
 
         Consumer<Integer> spawnLiftOperator = (y) -> {
@@ -780,10 +722,6 @@ public final class Skyblock extends JavaPlugin {
         long start = System.currentTimeMillis();
 
         this.spongeReplacerHandler = new SpongeReplacerHandler();
-
-        //this.spongeReplacerHandler.registerReplacer(new SpongeReplacer("Gold Mine", new SpongeBlock(Material.STONE, 10), new SpongeBlock(Material.IRON_ORE, 3), new SpongeBlock(Material.GOLD_ORE, 2)));
-       // this.spongeReplacerHandler.registerReplacer(new SpongeReplacer("The End", new SpongeBlock(Material.OBSIDIAN, 1)));
-
         this.spongeReplacerHandler.startGeneration();
 
         this.sendMessage("Successfully initialized sponge replacers [" + Util.getTimeDifferenceAndColor(start, System.currentTimeMillis()) + ChatColor.WHITE + "]");
